@@ -1,4 +1,4 @@
-### #1 如何实现 App 定时关闭
+## #1 如何实现 App 定时关闭
 
 一共可以有三种实现方式：
 
@@ -12,9 +12,9 @@
 
 
 
-### #2 实现简单拍照功能
+##  #2 实现简单拍照功能
 
-#### Step 1 获取 CameraManager
+### Step 1 获取 CameraManager
 
 一个 Android 系统服务用于管理检测、描述、连接相机设备（CameraDevice）。
 
@@ -24,7 +24,7 @@
 CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
 ```
 
-##### Step 1.1 获取操作的 CameraDevice
+#### Step 1.1 获取操作的 CameraDevice
 
 现在的 Android 手机通常有前置和后置摄像头，而且往往现在的后置摄像头不止一个，在拍照的时候需要具体到操作哪一个摄像头。Android Camera2 中 CameraDevice 表示一个单独连接到 Android 设备的相机，能够进行对拍照进行细粒度的控制和帧率的处理。
 
@@ -47,7 +47,7 @@ manager.openCamera(cameraId, CameraDevice.StateCallback, Handler);
 
 在 onOpend 这个钩子方法中，我们可以获取到打开的 CameraDevice。
 
-##### Step 1.2 获取合适的图像大小
+#### Step 1.2 获取合适的图像大小
 
 Android Camera 开发中，尺寸和方向的问题要搞清楚。
 
@@ -109,7 +109,7 @@ if (facing == CameraCharacteristics.LENS_FACING_BACK) {
 }
 ```
 
-#### Step 2 开启预览
+### Step 2 开启预览
 
 首先创建拍照请求的 Builder，即 CaptureRequest.Builder 。获取该类的实例需要调用 CameraDevice#createCaptureRequest 方法。请求有不同的类型，一共有 6 种不同的类型：
 
@@ -142,7 +142,7 @@ CameraCaptureSession.StateCallback 有 7 种状态的回调，分别是：
 
 然后就通过 CameraCaptureSession#setRepeatingRequest 方法开启预览。
 
-#### Step 3 处理拍照
+### Step 3 处理拍照
 
 应用可以通过 CaptureRequest.Builder 去设置拍照相关的参数，通过 CameraCaptureSession.CaptureCallback 去处理拍照的结果 CaptureResult。在编写相关的代码的时候，需要理清楚拍照过程发生了什么，然后将动作进行拆分。数码相机在拍照的过程涉及到 3A 算法，即：
 
@@ -158,7 +158,7 @@ CameraCaptureSession.StateCallback 有 7 种状态的回调，分别是：
 4. STATE_WAITING_NON_PRECAPTURE: 正在等待非曝光的其他步骤。
 5. STATE_PICTURE_TAKEN: 等待和处理拍照。
 
-##### Step 3.1 对焦
+#### Step 3.1 对焦
 
 按钮按下之后，开始对焦的代码如下：
 
@@ -224,7 +224,7 @@ private void process(CaptureResult result) {
 }
 ```
 
-##### Step 3.2 拍照
+#### Step 3.2 拍照
 
 上面的处理回调中，实际拍照的函数为 captureStillPicture，其实现如下：
 
@@ -247,7 +247,7 @@ mCaptureSession.abortCaptures();
 mCaptureSession.capture(captureBuilder.build(), CaptureCallback, null);
 ```
 
-##### Step 3.3 取消对焦，继续预览
+#### Step 3.3 取消对焦，继续预览
 
 这部分就是上面的 “设置拍照完成后的回调” ，具体如下：
 
@@ -265,15 +265,13 @@ public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull C
 }
 ```
 
-
-
-### #3 Android 存储系统
+## #3 Android 存储系统
 
 Android 存储系统大致有 2 种，分类如下：
 
-#### 3.1 内部存储
+### 3.1 内部存储
 
-##### 3.1.1 私有文件
+#### 3.1.1 私有文件
 
 用以保存应用的私有文件，其他应用无法访问，不需要额外权限。
 
@@ -284,17 +282,17 @@ fos = openFileOutput(filename, Context.MODE_PRIVATE);
 fis = openFileInput(filename);
 ```
 
-##### 3.1.2 静态文件
+#### 3.1.2 静态文件
 
 文件路径：res/raw
 
 使用方法：Resources#openRawResource
 
-##### 3.1.3 缓存数据
+#### 3.1.3 缓存数据
 
 使用方法：Context#getCacheDir
 
-#### 3.2 外部存储
+### 3.2 外部存储
 
 指一切可移除的存储介质（SD 卡），和不可移除的存储介质（手机内置的存储器）。需要额外权限：
 
@@ -303,7 +301,7 @@ fis = openFileInput(filename);
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 ```
 
-##### 3.2.1 公共文件
+#### 3.2.1 公共文件
 
 对于在应用中产生的多媒体类型的文件，如音乐、图片、铃声等，一般应该保存在外置存储中对应的公共目录下，如/Music、/Pictures、/Ringtones，这样方便和其他的应用共享这些文件。同时，系统的媒体扫描器也能正确地对这些文件进行归类。通过 Environment#getExternalStoragePublicDirectory 调用。Android 定义好的公共文件类型如下：
 
@@ -320,13 +318,13 @@ fis = openFileInput(filename);
 
 可能会不存在，所以在使用前最好先检查。
 
-##### 3.2.2 私有文件
+#### 3.2.2 私有文件
 
 外部存储中应用私有的存储文件，使用 Context#getExternalFilesDir 和 Context#getExternalFilesDirs 调用。对于即有 SD 卡又又内置存储器的设备，前一个方法只会返回内置存储器中的文件，而后一个方法能够返回两者。
 
 根目录的路径：Android/data/< package >/files/
 
-##### 3.2.3 缓存文件
+#### 3.2.3 缓存文件
 
 使用方法：Context#getExternalCacheDir 和 Context#getExternalCacheDirs
 
@@ -334,7 +332,7 @@ fis = openFileInput(filename);
 
 
 
-### #4 让拍摄的照片出现在照片浏览器
+## #4 让拍摄的照片出现在照片浏览器
 
 Android 知道公共文件中存在哪些多媒体文件靠 MediaStore。官方文档的解释如下：
 
@@ -363,8 +361,110 @@ public static void scanFile (Context context,
                 MediaScannerConnection.OnScanCompletedListener callback)
 ```
 
-### #5 Android 沉浸式显示
+
+
+## #5 Android 沉浸式显示
 
 沉浸模式（Immersive mode）
 
 [参考博文地址](https://blog.csdn.net/chazihong/article/details/70228933)
+
+## #6 Android Studio (Intellj 系列) 常用快捷键
+
+### Windows
+
+#### 6.1 光标移动到上次或下次浏览位置
+
+Ctrl + Alt + 方向键左右
+
+
+
+## #7 Android 消息机制
+
+### 7.1 Handler & Looper & MessageQueue & Message 介绍
+
+#### 7.1.1 Handler
+
+>A Handler allows you to send and process `Message` and Runnable objects associated with a thread's `MessageQueue`. Each Handler instance is associated with a single thread and that thread's message queue. When you create a new Handler, it is bound to the thread / message queue of the thread that is creating it -- from that point on, it will deliver messages and runnables to that message queue and execute them as they come out of the message queue.
+>
+>There are two main uses for a Handler: (1) to schedule messages and runnables to be executed at some point in the future; and (2) to enqueue an action to be performed on a different thread than your own.
+
+Handler 可以规划代码在不同的时间（time）与空间（thread）执行。
+
+#### 7.1.2 Looper
+
+> Class used to run a message loop for a thread. Threads by default do not have a message loop associated with them; to create one, call `prepare()` in the thread that is to run the loop, and then `loop()` to have it process messages until the loop is stopped.
+
+Typical example of the implementation of a Looper thread:
+
+```java
+class LooperThread extend Thread {
+	public Handler mHandler;
+	public void run() {
+		// Initialize the current thread as a looper.
+		Looper.prepaer();
+		mHandler = new Handler() {
+			// process incoming messages
+			public void handlerMessage(Message message) {}
+		}
+		// Run the message queue in this thread.
+		Looper.loop();
+	}
+}
+```
+
+每个线程只能生成一个 Looper，源码如下：
+
+```java
+private static void prepare(boolean quitAllowed) {
+    // ThreadLocal 
+    if (sThreadLocal.get() != null) {
+        throw new RuntimeException("Only one Looper may be created per thread");
+    }
+    sThreadLocal.set(new Looper(quitAllowed));
+}
+```
+
+上面的 ThreadLocal，该类有一个内部类 ThreadLocalMap，每个 Thread 都持有了一个 ThreadLocal.ThreadLocalMap 。当调用 ThreadLocal#set 方法时，其实是以该 ThreadLocal 对象为 key，往该线程的 ThreadLocalMap 插入值。所以 ThreadLocal 本身并不存储值，而是作为 key，让线程在自身的 ThreadLocalMap 进行存取。
+
+上面的代码可以保证在线程中只会创建一个唯一的 Looper，所以 **Thread 和 Looper 是一对一的关系** 。
+
+#### 7.1.3 MessageQueue
+
+> Low-level class holding the list of messages to be dispatched by a `Looper`. Messages are not added directly to a MessageQueue, but rather through `Handler` objects associated with the Looper.
+
+在 Looper#perpaer 中，会去生成这个 Looper 所对应的 MessageQueue:
+
+```java
+final MessageQueue mQueue;
+
+// Looper#perpaer 中调用私有构造函数
+private Looper(boolean quitAllowed) {
+    mQueue = new MessageQueue(quitAllowed);
+    mThread = Thread.currentThread();
+}
+```
+
+每个 Looper 中的 MessageQueue 是 final 的，保证 Looper 和 MessageQueue 是一对一的，所以 **Thread 和 MessageQueue 也是一对一的关系** 。
+
+MessageQueue 中的 Message 是以链表的形式进行存储。
+
+#### 7.1.4 Message
+
+> Defines a message containing a description and arbitrary data object that can be sent to a `Handler`.
+
+Message 也就是要发送给 handler 处理的东西。
+
+### 7.2 三者的关系
+
+不去探究底层的实现，在 SDK 的层面上 Handler、Looper、MessageQueue 的关系如下：
+
+存在线程 A、B，若 A 中的任务需要在 B 线程中执行。先在 B 中创建 Looper 、MessageQueue、 Handler。
+
+1. A 中拿到 Handler 执行 send，send 会调用 MessageQueue 的 enqueueMessage 方法。
+2. B 中的 Looper 会一直执行 loop 方法，该方法是一个无限循环，调用 MessageQueue 的 next 阻塞方法（会一直调用 Message.next，因为是链表形式存储）。取到的 Message 就是 Handler#send 的内容。当 next 返回 null，loop 结束，只有调用 Looper#quit，MessageQueue#next 才会返回 null。
+3. Looper#loop 中接受到的 message 会调用 message.target#dispatchMessage 方法，target 就是 A 中使用的 Handler，即会在当前 B 线程执行 A 中使用 Handler#send 想要去执行的内容。
+
+盗的一个图如下：
+
+![handler](.\images\handler.png)
